@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
 import helmet from 'helmet'
 import connectDB from './config/connectDB.js'
+import userRouter from '../server/route/user.route.js'
 
 const app=express()
 app.use(cors({
@@ -27,11 +28,13 @@ app.get('/',(req,res)=>{
     })
 })
 
+app.use('/api/user',userRouter)
+
 connectDB().then(()=>{
     app.listen(PORT,()=>{
         console.log("Server is running",PORT)
     })
 })
 
-//34:00
+//1:58:00
 //https://www.youtube.com/watch?v=sgJlE0utgHU&list=LL&index=1&t=684s
