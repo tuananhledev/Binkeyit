@@ -5,6 +5,8 @@ import verifyEmailTemplate from '../utils/verifyEmailTemplate.js'
 import generatedAccessToken from '../utils/generatedAccessToken.js'
 import generatedRefreshToken from '../utils/generatedRefreshToken.js'
 import uploadImageClodinary from '../utils/uploadImageClodinary.js'
+import generatedOtp from '../utils/generatedOtp.js'
+import forgotPasswordTemplate from '../utils/forgotPasswordTemplate.js'
 
 export async function registerUserController(req,res) {
     try{
@@ -274,5 +276,52 @@ export async function updateUserDetails(req,res) {
     }
 }
 
+
+//forgot password not login
+export async function forgotPasswordController(req,res) {
+    try {
+        const {email} = req.body
+
+        const user = await UserModel.findOne({email})
+
+        if(!user){
+            return res.status(400).json({
+                message:"Email not available",
+                error:true,
+                success:false
+            })
+        }
+
+        const otp = generatedOtp()
+        const expireTime = new Date() + 60 * 60 * 1000 //1hr
+
+        const update = await UserModel.findByIdAndUpdate(user._id,{
+            forgot_password_otp:otp,
+            forgot_password_expiry:new Date(expireTime).toISOString()
+        })
+
+        await sendEmail({
+            sendTo: email,
+            subject: "Forgot password from Binkeyit",
+            html: forgotPasswordTemplate({
+                name: user.name,
+                otp: otp
+            })
+        })
+
+        return res.json({
+            message:"check your email",
+            error:false,
+            success:true 
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error:true,
+            success:false
+        })
+    }
+}
 
 
